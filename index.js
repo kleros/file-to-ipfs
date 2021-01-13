@@ -8,7 +8,11 @@ const { hideBin } = require("yargs/helpers");
 const DEFAULT_IPFS_ENDPOINT = "https://ipfs.kleros.io";
 
 const argv = yargs(hideBin(process.argv))
-  .usage("Usage: $0 --src <file-path> [--rename <new-name>]")
+  .locale("en")
+  .usage(
+    `Usage: $0 --file <file-path>
+    [-v] [--rename <new-name>] [-e <ipfs-endpoint>]`
+  )
   .option("f", {
     description: "The path of the file",
     alias: "file",
@@ -23,6 +27,7 @@ const argv = yargs(hideBin(process.argv))
     default: DEFAULT_IPFS_ENDPOINT,
   })
   .option("v", {
+    description: "Whether it should display the full IPFS upload result or not",
     alias: "verbose",
   })
   .option("h", {
