@@ -5,7 +5,7 @@ CLI utility to upload files to Kleros IPFS node.
 ## Usage
 
 ```
-Usage: index.js --file <file-path> [--rename <new-name>]
+Usage: file-to-ipfs --file <file-path> [--rename <new-name>]
 
 Options:
   -f, --file      The path of the file                       [string] [required]
