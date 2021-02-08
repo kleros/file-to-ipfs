@@ -6,9 +6,10 @@
   "bin": {
     "file-to-ipfs": "./cli.js"
   },
-  "engines": {
-    "node": ">=7.6.0"
-  },
+  "files": [
+    "cli.js",
+    "file-to-ipfs.js"
+  ],
   "dependencies": {
     "node-fetch": "^2.6.0",
     "yargs": "^16.2.0"
@@ -19,5 +20,8 @@
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-prettier": "^3.3.1",
     "prettier": "^2.2.1"
+  },
+  "engines": {
+    "node": ">=7.6.0"
   }
 }
