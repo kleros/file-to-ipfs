@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 const path = require("path");
-const fs = require("fs");
-const fetch = require("node-fetch");
 const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
+const fileToIpfs = require("./file-to-ipfs");
 
-const DEFAULT_IPFS_ENDPOINT = "https://ipfs.kleros.io";
+const { factory, DEFAULT_IPFS_ENDPOINT } = fileToIpfs;
 
 const argv = yargs(hideBin(process.argv))
   .locale("en")
@@ -42,36 +41,18 @@ const argv = yargs(hideBin(process.argv))
   .coerce(["e"], (arg) => String(arg).replace(/\/+$/, "")).argv;
 
 (async () => {
-  const file = argv.file;
-  const fileName = argv.rename || path.basename(file);
-
-  const contents = fs.readFileSync(file);
+  const endpoint = argv.endpoint;
+  const instance = endpoint ? factory({ endpoint }) : fileToIpfs;
 
   try {
-    const data = await ipfsPublish(fileName, contents);
-    if (argv.verbose) {
-      console.log(JSON.stringify(data, null, 2));
-    }
+    const ipfsPath = await instance(argv.file, {
+      rename: argv.rename,
+      verbose: argv.verbose,
+    });
 
-    const [file, directory] = data;
-    console.log(`/ipfs${directory.path}${directory.hash}${file.path}`);
+    console.log(ipfsPath);
   } catch (err) {
     console.error(err);
     process.exit(1);
   }
 })();
-
-async function ipfsPublish(fileName, contents) {
-  return fetch(`${argv.endpoint}/add`, {
-    method: "POST",
-    body: JSON.stringify({
-      fileName,
-      buffer: contents,
-    }),
-    headers: {
-      "content-type": "application/json",
-    },
-  })
-    .then((response) => response.json())
-    .then((success) => success.data);
-}
