@@ -26,7 +26,7 @@ const argv = yargs(hideBin(process.argv))
     Regular files:
       $0 --file <file-path> [-v] [--rename <new-name>] [-e <ipfs-endpoint>]
     Directories inside a zip file that will be unzipped:
-      $0 --zipped-directory <zip-file-path> [-v] [--rename <new-name>] [-e <ipfs-endpoint>]`
+      $0 --zipped-directory <zip-file-path> [-v] [-e <ipfs-endpoint>]`
   )
   .option("f", {
     description: "The path of the file",
@@ -56,6 +56,7 @@ const argv = yargs(hideBin(process.argv))
     alias: "version",
   })
   .check(demandOneOfOption(["f", "z"]))
+  .conflicts("z", ["f", "r"])
   .string(["f", "z", "r", "e"])
   .coerce(["f", "z"], path.resolve)
   .coerce(["e"], (arg) => String(arg).replace(/\/+$/, "")).argv;
