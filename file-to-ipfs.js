@@ -1,6 +1,7 @@
 const path = require("path");
-const fs = require("fs").promises;
+const fs = require("fs");
 const fetch = require("node-fetch");
+const FormData = require("form-data");
 
 const DEFAULT_IPFS_ENDPOINT = "https://ipfs.kleros.io";
 
@@ -19,21 +20,21 @@ function factory({ endpoint }) {
   /**
    * @type FileToIpfs
    */
-  return async function fileToIpfs(filePath, { rename, verbose = false } = {}) {
+  async function fileToIpfs(filePath, { rename, isZippedDirectory = false, verbose = false } = {}) {
     const fileName = rename || path.basename(filePath);
-    const content = await fs.readFile(filePath);
-
-    const result = await ipfsPublish(fileName, content);
+    const publish = isZippedDirectory ? ipfsPublishZippedDirectory : ipfsPublishFile;
+    const result = await publish(fileName, filePath);
 
     if (verbose) {
       console.log(JSON.stringify(result, null, 2));
     }
 
-    const [file, directory] = result;
-    return `/ipfs${directory.path}${directory.hash}${file.path}`;
-  };
+    return publish.parseResult(result);
+  }
 
-  async function ipfsPublish(fileName, content) {
+  async function ipfsPublishFile(fileName, filePath) {
+    const content = await fs.promsies.readFile(filePath);
+
     return fetch(`${endpoint}/add`, {
       method: "POST",
       body: JSON.stringify({
@@ -47,6 +48,34 @@ function factory({ endpoint }) {
       .then((response) => response.json())
       .then((success) => success.data);
   }
+
+  ipfsPublishFile.parseResult = (result) => {
+    const [file, directory] = result;
+    return `/ipfs${directory.path}${directory.hash}${file.path}`;
+  };
+
+  async function ipfsPublishZippedDirectory(fileName, filePath) {
+    const formData = new FormData();
+    formData.append("file", fs.createReadStream(filePath));
+
+    return fetch(`${endpoint}/add-zipped-directory`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        ...formData.getHeaders(),
+        accept: "application/json",
+      },
+    })
+      .then(async (response) => response.json())
+      .then((success) => success.data);
+  }
+
+  ipfsPublishZippedDirectory.parseResult = (result) => {
+    const [baseDir, root] = result.slice(-2);
+    return `/ipfs${root.path}${root.hash}${baseDir.path}`;
+  };
+
+  return fileToIpfs;
 }
 
 /**

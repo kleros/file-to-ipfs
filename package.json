@@ -11,6 +11,7 @@
     "file-to-ipfs.js"
   ],
   "dependencies": {
+    "form-data": "^4.0.0",
     "node-fetch": "^2.6.0",
     "yargs": "^16.2.0"
   },
