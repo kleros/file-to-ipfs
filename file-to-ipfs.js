@@ -33,7 +33,7 @@ function factory({ endpoint }) {
   }
 
   async function ipfsPublishFile(fileName, filePath) {
-    const content = await fs.promsies.readFile(filePath);
+    const content = await fs.promises.readFile(filePath);
 
     return fetch(`${endpoint}/add`, {
       method: "POST",
